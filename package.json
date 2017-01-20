@@ -1,0 +1,40 @@
+{
+  "name": "practical",
+  "version": "0.0.1",
+  "description": "Practical ActiveRecord for DynamoDB",
+  "main": "./model.js",
+  "author": "Andrés Santibáñez (santibanez.andres@gmail.com)",
+  "license": "MIT",
+  "engines": {
+    "node": ">=4.3.0"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.7.27",
+    "bluebird": "^3.4.7",
+    "mocha": "^3.2.0",
+    "moment": "^2.17.1"
+  },
+  "devDependencies": {
+    "expect.js": "^0.3.1",
+    "faker": "^3.1.0",
+    "mocha": "^3.2.0"
+  },
+  "scripts": {
+    "pretest": "npm run database-setup",
+    "test": " mocha --reporter spec",
+    "dynamodb-local": "cd dynamodb-local && java -Djava.library.path=./DynamoDBLocal_lib -jar DynamoDBLocal.jar -sharedDb -inMemory",
+    "database-setup": "cd test/database && node migrate && node seeder"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/asantibanez/practical.git"
+  },
+  "keywords": [
+    "dynamodb",
+    "activerecord"
+  ],
+  "bugs": {
+    "url": "https://github.com/asantibanez/practical/issues"
+  },
+  "homepage": "https://github.com/asantibanez/practical#readme"
+}
