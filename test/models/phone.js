@@ -16,6 +16,9 @@ class Phone extends Model {
             'extension',
             'notes'
         ];
+
+        const Customer = require('./customer');
+        this.belongsTo('customer', Customer);
     }
 }
 
