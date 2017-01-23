@@ -15,7 +15,7 @@ class QueryBuilder {
         this.limitSpecified = false;
     }
 
-    withIndexName(indexName, indexHashKey, indexRangeKey) {
+    usingIndex(indexName, indexHashKey, indexRangeKey) {
         if (indexName) {
             this.indexNameSpecified = true;
             this.indexName = indexName;
@@ -61,7 +61,7 @@ class QueryBuilder {
     }
 
     getModelTableName() {
-        return this.newModelInstance().tableName;
+        return this.newModelInstance().getTableName();
     }
 
     getQueryKeyConditionExpression() {
@@ -110,6 +110,7 @@ class QueryBuilder {
                     const models = data.Items.map(item => {
                         const model = self.newModelInstance();
                         model.fill(item);
+                        model.setExists();
                         return model;
                     });
 
@@ -130,6 +131,7 @@ class QueryBuilder {
                 const models = data.Items.map(item => {
                     const model = self.newModelInstance();
                     model.fill(item);
+                    model.setExists();
                     return model;
                 });
 

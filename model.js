@@ -83,6 +83,10 @@ class Model {
         });
     }
 
+    setExists() {
+        this.exists = true;
+    }
+
     isDirty() {
         return Object.keys(this.getDirty()).length > 0;
     }
@@ -109,8 +113,12 @@ class Model {
         return this.__performInsert();
     }
 
-    __performUpdate() {
+    trash() {
+        if (!this.exists) {
+            return Promise.reject(new Error('Model has not been loaded'));
+        }
 
+        return this.__performDelete();
     }
 
     __performInsert() {
@@ -151,6 +159,65 @@ class Model {
         });
     }
 
+    __performUpdate() {
+
+    }
+
+    __performDelete() {
+        const self = this;
+
+        const key = {};
+        key[this.getHashKeyAttribute()] = this.getHashKeyValue();
+
+        if (this.hasRangeKey())
+            key[this.getRangeKeyAttribute()] = this.getRangeKeyValue();
+
+        const params = {};
+        params['TableName'] = this.getTableName();
+        params['Key'] = key;
+
+        return new Promise((resolve, reject) => {
+            self.dynamoDocClient.delete(params, (err, data) => {
+                if (err) {
+                    return reject(err);
+                }
+
+                return resolve(data);
+            });
+        });
+    }
+
+    getTableName() {
+        return this.tableName;
+    }
+
+    getHashKeyAttribute() {
+        return this.hashKey;
+    }
+
+    getHashKeyValue() {
+        return this[this.getHashKeyAttribute()];
+    }
+
+    hasRangeKey() {
+        return this.rangeKey;
+    }
+
+    getRangeKeyAttribute() {
+        return this.rangeKey;
+    }
+
+    getRangeKeyValue() {
+        return this[this.getRangeKeyAttribute()];
+    }
+
+    static destroy(dynamoDocClient, hashKey, rangeKey) {
+        return this.find(dynamoDocClient, hashKey, rangeKey)
+            .then(model => {
+                return model.trash();
+            });
+    }
+
     static create(dynamoDocClient, data) {
         const model = new this(dynamoDocClient);
         model.fill(data);
@@ -165,38 +232,6 @@ class Model {
             .whereRange(rangeKey)
             .first();
     }
-
-    /*
-    update() {
-    }
-
-    destroy() {
-        const self = this;
-
-        const key = {};
-        key[this.hashKey] = this[this.hashKey];
-
-        if (this.rangeKey)
-            key[this.rangeKey] = this[this.rangeKey];
-
-        const params = {};
-        params['TableName'] = this.tableName;
-        params['Key'] = key;
-
-        return new Promise((resolve, reject) => {
-            self.dynamoDocClient.delete(params, (err, data) => {
-                if (err) {
-                    return reject(err);
-                }
-
-                return resolve(data);
-            });
-        });
-    }
-
-
-
-
 
     static all(dynamoDocClient) {
         const query = new QueryBuilder(dynamoDocClient);
@@ -216,13 +251,14 @@ class Model {
         return query.withModel(this);
     }
 
+    /*
     hasRelationship(name) {
         return this.relationships.hasOwnProperty(name);
     }
 
-    newRelationship(name, classFunction, hashKey, indexName) {
+    newRelationship(name, model, hashKey, indexName) {
         this.relationships[name] = {
-            classFunction: classFunction,
+            model: model,
             hashKey: hashKey,
             indexName: indexName,
             loaded: false,
