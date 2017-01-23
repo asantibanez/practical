@@ -211,6 +211,10 @@ class Model {
         return this[this.getRangeKeyAttribute()];
     }
 
+    getAttributeValue(attribute) {
+        return this[attribute];
+    }
+
     static destroy(dynamoDocClient, hashKey, rangeKey) {
         return this.find(dynamoDocClient, hashKey, rangeKey)
             .then(model => {
@@ -251,21 +255,21 @@ class Model {
         return query.withModel(this);
     }
 
-    /*
     hasRelationship(name) {
         return this.relationships.hasOwnProperty(name);
     }
 
-    newRelationship(name, model, hashKey, indexName) {
+    newRelationship(name, model, indexName, hashKey, rangeKey) {
         this.relationships[name] = {
             model: model,
             hashKey: hashKey,
+            rangeKey: rangeKey,
             indexName: indexName,
             loaded: false,
             value: null
         };
     }
-
+    /*
     belongsTo(name, model, hashKey, indexName) {
         const self = this;
 
@@ -293,14 +297,15 @@ class Model {
             return Promise.resolve(relationship.value);
         };
     }
+    */
 
-    hasOne(name, model, hashKey, indexName) {
+    hasOne(name, model, indexName, hashKey, rangeKey) {
         const self = this;
 
         if (this.hasRelationship(name))
             return;
 
-        this.newRelationship(name, model, hashKey, indexName);
+        this.newRelationship(name, model, indexName, hashKey, rangeKey);
 
         this[name] = (forceLoad) => {
             const relationship = self.relationships[name];
@@ -308,8 +313,9 @@ class Model {
                 const query = new QueryBuilder(self.dynamoDocClient);
                 return query
                     .withModel(model)
-                    .whereHash(this[hashKey], hashKey)
-                    .withIndexName(indexName)
+                    .usingIndex(indexName, hashKey, rangeKey)
+                    .whereHash(this.getAttributeValue(hashKey || this.getHashKeyAttribute()))
+                    .whereRange(this.getAttributeValue(rangeKey || this.getRangeKeyAttribute()))
                     .first()
                     .then((model) => {
                         self.relationships[name].value = model;
@@ -322,6 +328,7 @@ class Model {
         };
     }
 
+    /*
     hasMany(name, model, hashKey, indexName) {
         const self = this;
 

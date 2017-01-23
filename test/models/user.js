@@ -13,8 +13,8 @@ class User extends Model {
             'password'
         ];
 
-        // const Customer = require('./customer');
-        // this.hasOne('customer', Customer, 'email', 'Email-Index');
+        const Customer = require('./customer');
+        this.hasOne('customer', Customer, 'Email-Index', 'email');
     }
 }
 
