@@ -1,6 +1,6 @@
 {
   "name": "practical",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Practical ActiveRecord for DynamoDB",
   "main": "./model.js",
   "author": "Andrés Santibáñez (santibanez.andres@gmail.com)",
