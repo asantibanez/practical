@@ -269,14 +269,14 @@ class Model {
             value: null
         };
     }
-    /*
-    belongsTo(name, model, hashKey, indexName) {
+
+    belongsTo(name, model, indexName, hashKey, rangeKey) {
         const self = this;
 
         if (this.hasRelationship(name))
             return;
 
-        this.newRelationship(name, model, hashKey, indexName);
+        this.newRelationship(name, model, indexName, hashKey, rangeKey);
 
         this[name] = (forceLoad) => {
             const relationship = self.relationships[name];
@@ -284,8 +284,9 @@ class Model {
                 const query = new QueryBuilder(self.dynamoDocClient);
                 return query
                     .withModel(model)
-                    .whereHash(this[hashKey], hashKey)
-                    .withIndexName(indexName)
+                    .usingIndex(indexName, hashKey, rangeKey)
+                    .whereHash(this.getAttributeValue(hashKey || this.getHashKeyAttribute()))
+                    .whereRange(this.getAttributeValue(rangeKey || this.getRangeKeyAttribute()))
                     .first()
                     .then((model) => {
                         self.relationships[name].value = model;
@@ -297,7 +298,6 @@ class Model {
             return Promise.resolve(relationship.value);
         };
     }
-    */
 
     hasOne(name, model, indexName, hashKey, rangeKey) {
         const self = this;

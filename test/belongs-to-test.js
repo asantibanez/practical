@@ -12,17 +12,17 @@ const dynamoDocClient = require('./utils/dynamo-doc-client');
 describe('Has One tests', function() {
 
     it('Instance should return relate model', () => {
-        return User.first(dynamoDocClient)
-            .then(user => {
+        return Customer.first(dynamoDocClient)
+            .then(customer => {
                 return Promise.all([
-                    user,
-                    user.customer()
+                    customer,
+                    customer.user()
                 ]);
-            }).spread((user, customer) => {
+            }).spread((customer, user) => {
                 Expect(user).to.not.be(null);
                 Expect(customer).to.not.be(null);
-                Expect(customer).to.be.a(Customer);
-                Expect(customer.email).to.be(user.email);
+                Expect(user).to.be.an(User);
+                Expect(user.email).to.be(customer.email);
             });
     });
 
