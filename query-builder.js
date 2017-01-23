@@ -70,7 +70,7 @@ class QueryBuilder {
 
         const keyConditionExpressionParts = [];
         keyConditionExpressionParts.push(`${hashKeyAttribute} = :${hashKeyAttribute}`);
-        if (this.rangeKeySpecified && rangeKeyAttribute) {
+        if (this.rangeKeySpecified && rangeKeyAttribute && this.rangeKeyValue) {
             keyConditionExpressionParts.push(`${rangeKeyAttribute} ${this.rangeKeyOperator} :${rangeKeyAttribute}`);
         }
 
@@ -83,7 +83,7 @@ class QueryBuilder {
 
         const expressionAttributeValues = {};
         expressionAttributeValues[`:${hashKeyAttribute}`] = this.hashKeyValue;
-        if (this.rangeKeySpecified && rangeKeyAttribute) {
+        if (this.rangeKeySpecified && rangeKeyAttribute && this.rangeKeyValue) {
             expressionAttributeValues[`:${rangeKeyAttribute}`] = this.rangeKeyValue;
         }
 

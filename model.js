@@ -328,14 +328,13 @@ class Model {
         };
     }
 
-    /*
-    hasMany(name, model, hashKey, indexName) {
+    hasMany(name, model, indexName, hashKey, rangeKey) {
         const self = this;
 
         if (this.hasRelationship(name))
             return;
 
-        this.newRelationship(name, model, hashKey, indexName);
+        this.newRelationship(name, model, indexName, hashKey, rangeKey);
 
         this[name] = (forceLoad) => {
             const relationship = self.relationships[name];
@@ -343,8 +342,9 @@ class Model {
                 const query = new QueryBuilder(self.dynamoDocClient);
                 return query
                     .withModel(model)
-                    .whereHash(this[hashKey])
-                    .withIndexName(indexName)
+                    .usingIndex(indexName, hashKey, rangeKey)
+                    .whereHash(this.getAttributeValue(hashKey || this.getHashKeyAttribute()))
+                    .whereRange(this.getAttributeValue(rangeKey || this.getRangeKeyAttribute()))
                     .get()
                     .then((models) => {
                         self.relationships[name].value = models;
@@ -358,9 +358,9 @@ class Model {
 
         this[`where${Helpers.uppercaseFirst(name)}`] = () => {
             const query = new QueryBuilder(self.dynamoDocClient);
-            return query.withModel(model).whereHash(this[hashKey], hashKey);
+            return query.withModel(model)
+                .whereHash(this.getAttributeValue(hashKey || this.getHashKeyAttribute()))
         };
     }
-    */
 }
 module.exports = Model;

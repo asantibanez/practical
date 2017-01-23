@@ -3,26 +3,30 @@
 
 const Promise = require('bluebird');
 const Expect = require('expect.js');
-const User = require('./models/user');
 const Customer = require('./models/customer');
+const Phone = require('./models/phone');
 
 const dynamoDocClient = require('./utils/dynamo-doc-client');
 
 
-describe('Has One tests', function() {
+describe('Has Many tests', function() {
 
-    it('Instance should return relate model', () => {
-        return User.first(dynamoDocClient)
-            .then(user => {
+    it('Instance should return related models', () => {
+        return Customer.first(dynamoDocClient)
+            .then(customer => {
                 return Promise.all([
-                    user,
-                    user.customer()
+                    customer,
+                    customer.phones()
                 ]);
-            }).spread((user, customer) => {
-                Expect(user).to.not.be(null);
+            }).spread((customer, phones) => {
                 Expect(customer).to.not.be(null);
-                Expect(customer).to.be.a(Customer);
-                Expect(customer.email).to.be(user.email);
+                Expect(phones).to.not.be(null);
+                Expect(phones).to.be.an(Array);
+
+                phones.forEach(phone => {
+                    Expect(phone).to.be.a(Phone);
+                    Expect(phone.customerId).to.be(customer.customerId);
+                });
             });
     });
 

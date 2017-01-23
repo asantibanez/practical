@@ -18,8 +18,8 @@ class Customer extends Model {
         const User = require('./user');
         this.belongsTo('user', User, null, 'email');
 
-        // const Phone = require('./phone');
-        // this.hasMany('phones', Phone, 'customerId')
+        const Phone = require('./phone');
+        this.hasMany('phones', Phone);
     }
 }
 
