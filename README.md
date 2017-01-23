@@ -205,10 +205,133 @@ Customer.find(dynamoDocClient, 'your-customer-id')
 
 ## Relationships
 
-### Belong To
-### Has One
-### Has Many
+With `practical` you can define relationships in your table classes in order to access 
+related data easily. You can define the following relationships:
+- BelongsTo
+- HasOne
+- HasMany
 
+For example, lets assume we have a Customers and a Phones table. Every Customer may have 
+one or multiple Phones. With this in place, we can assume the following relationships 
+in our table classes
+
+For `Customer` class, we can define the `hasMany` relationship providing a name for 
+the relationship, the class constructor of the related model and an Index, Hash Key and 
+Range Key if necessary.
+
+```
+const Customer = require('path/to/your/class');
+
+class Customer extends Model {
+    this.config() {
+        this.tableName = 'Customers';
+        this.hashKey = 'customerId';
+        this.attributes = [
+            'customerId',
+            'firstName',
+            'lastName',
+            'email'
+        ];
+        
+        const Phone = require('path/to/your/class');
+        this.hasMany('phones', Phone, null, 'customerId');
+    }
+}
+
+module.exports = Customer;
+```
+
+The inverse of this relationship will be defined in the `Phone` class.
+
+```
+const Phone = require('path/to/your/class');
+
+class Phone extends Model {
+    this.config() {
+        this.tableName = 'Phones';
+        this.hashKey = 'customerId';
+        this.rangeKey = 'phoneId';
+        this.attributes = [
+            'customerId',
+            'phoneId',
+            'number',
+            'notes'
+        ];
+        
+        const Customer = require('path/to/your/class');
+        this.belongsTo('customer', Customer, null, 'customerId');
+    }
+}
+
+module.exports = Phone;
+```
+
+With this definition in place, we can make use of some "magic" methods `practical` setups 
+when configuring your classes. These magic methods come with the name provided for the 
+relationship in our class definition. 
+
+For example, if we have a `Phone` instance and want to get the `Customer` record it
+belongs to, we can use the method `customer` that `practical` defined behind the scenes.
+
+```
+const Phone = require('path/to/your/class');
+
+Phone.first(dynamoDocClient)
+    .then(phone => {
+        return phone.customer();
+    })
+    .then(customer => {
+        //Work with customer record 
+    });
+}
+```
+
+The same can be done for fetching all `Phone`s that a `Customer` has registered.
+
+```
+const Customer = require('path/to/your/class');
+
+Customer.first(dynamoDocClient)
+    .then(customer => {
+        return customer.phones();
+    })
+    .then(phonesArray => {
+        //Work with customer phones
+    });
+}
+```
+
+The **HasOne** relationship can be used for modeling 1 to 1 relationships. For example: 
+A Customer has one Account.
+
+```
+const Customer = require('path/to/your/class');
+
+class Customer extends Model {
+    this.config() {
+        this.tableName = 'Customers';
+        this.hashKey = 'customerId';
+        this.attributes = [
+            'customerId',
+            'firstName',
+            'lastName',
+            'email'
+        ];
+        
+        const Phone = require('path/to/your/class');
+        this.hasMany('phones', Phone, null, 'customerId');
+        
+        const Account = require('path/to/your/class');    
+        this.hasOne('account', Account, null, 'customerId');
+    }
+}
+
+module.exports = Customer;
+```
+
+As you can see in the previous example, you can add as many relationships as you need
+providing a unique name for each one. Then you can access them by using the 
+`relationshipName` method.
 
 ## TODO
 * Support for record updates
