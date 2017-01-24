@@ -139,7 +139,7 @@ Customer.find(dynamoDocClient, customerId)
 ```
 This method also works with range keys if your table makes use of it.
 
-### Create record
+### Creating records
 
 To create a record in your table, you can use the `create` method passing along the data
 you need as an object
@@ -175,7 +175,26 @@ customer.save()
     });
 ```
 
-### Delete record
+### Updating records
+
+You can update records in the same fashion you create items in your database table. In order 
+to update an item, have it retrieved from the database, modify the required attributes/data 
+and then use the `save` method.
+
+```
+const Customer = require('path/to/your/class');
+
+Customer.find(dynamoDocClient, 'your-id')
+    .then(customer => {
+        customer.email = 'new-email-value';
+        return customer.save();
+    })
+    .then(updatedCustomer => {
+        //Work with updated customer
+    });
+```
+
+### Deleting records
 
 To delete a record in your table, use the `destroy` method passing along the hash key 
 and range key values of your item.
@@ -334,6 +353,4 @@ providing a unique name for each one. Then you can access them by using the
 `relationshipName` method.
 
 ## TODO
-* Support for record updates
-* Add documentation for other available methods: query(), save(), trash(), destroy()
-* Add documentation for relationships accessors;
+* Support Dynamo Batch requests
