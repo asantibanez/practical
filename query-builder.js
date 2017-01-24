@@ -50,7 +50,7 @@ class QueryBuilder {
         this.rangeKeySpecified = true;
 
         this.rangeKeyValue = value;
-        this.rangeKeyOperator = operator;
+        this.rangeKeyOperator = operator || ' = ';
         this.rangeKey = attribute || this.newModelInstance().rangeKey;
 
         return this;

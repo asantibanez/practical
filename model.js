@@ -91,7 +91,7 @@ class Model {
         return Object.keys(this.getDirty()).length > 0;
     }
 
-    getDirty() {
+    getDirty(includeKeys) {
         const self = this;
 
         const dirty = {};
@@ -160,21 +160,83 @@ class Model {
     }
 
     __performUpdate() {
+        const self = this;
 
+        if (!this.isDirty()) {
+            return Promise.resolve(this);
+        }
+
+        const params = {};
+        params['TableName'] = this.getTableName();
+        params['Key'] = this.getKeyObject();
+        params['UpdateExpression'] = this.__getUpdateExpressionForUpdate();
+        params['ExpressionAttributeNames'] = this.__getExpressionAttributesNamesForUpdate();
+        params['ExpressionAttributeValues'] = this.__getExpressionAttributesValuesForUpdate();
+
+        return new Promise((resolve, reject) => {
+            self.dynamoDocClient.update(params, (err, data) => {
+                if (err) {
+                    console.log('-- Update command --');
+                    console.log(JSON.stringify(params, null, 2));
+                    console.log('--------------------');
+                    return reject(err);
+                }
+
+                return resolve(self);
+            });
+        });
+    }
+
+    __getUpdateExpressionForUpdate() {
+        const dirty = this.getDirty();
+        const updateExpressionParts = [];
+        Object.keys(dirty).forEach(attribute => {
+            updateExpressionParts.push(`#${attribute}Alias = :${attribute}Alias`);
+        });
+
+        return `set ${updateExpressionParts.join(', ')}`;
+    }
+
+    __getExpressionAttributesNamesForUpdate() {
+        const dirty = this.getDirty();
+        const expressionAttributesNames = {};
+        Object.keys(dirty).forEach(attribute => {
+            expressionAttributesNames[`#${attribute}Alias`] = attribute;
+        });
+
+        // if (this.hasRangeKey()) {
+        //     expressionAttributesNames[`#${this.getRangeKeyAttribute()}Alias`] = this.getRangeKeyAttribute();
+        // } else {
+        //     expressionAttributesNames[`#${this.getHashKeyAttribute()}Alias`] = this.getHashKeyAttribute();
+        // }
+
+        return expressionAttributesNames;
+    }
+
+    __getExpressionAttributesValuesForUpdate() {
+        const dirty = this.getDirty();
+        const expressionAttributesValues = {};
+        Object.keys(dirty).forEach(attribute => {
+            expressionAttributesValues[`:${attribute}Alias`] = dirty[attribute];
+        });
+
+        return expressionAttributesValues;
+    }
+
+    __getConditionExpressionForUpdate() {
+        if (this.hasRangeKey()) {
+            return `attribute_exists(#alias${this.getRangeKeyAttribute()})`;
+        }
+
+        return `attribute_exists(#alias${this.getHashKeyAttribute()})`;
     }
 
     __performDelete() {
         const self = this;
 
-        const key = {};
-        key[this.getHashKeyAttribute()] = this.getHashKeyValue();
-
-        if (this.hasRangeKey())
-            key[this.getRangeKeyAttribute()] = this.getRangeKeyValue();
-
         const params = {};
         params['TableName'] = this.getTableName();
-        params['Key'] = key;
+        params['Key'] = this.getKeyObject();
 
         return new Promise((resolve, reject) => {
             self.dynamoDocClient.delete(params, (err, data) => {
@@ -189,6 +251,16 @@ class Model {
 
     getTableName() {
         return this.tableName;
+    }
+
+    getKeyObject() {
+        const key = {};
+        key[this.getHashKeyAttribute()] = this.getHashKeyValue();
+
+        if (this.hasRangeKey())
+            key[this.getRangeKeyAttribute()] = this.getRangeKeyValue();
+
+        return key;
     }
 
     getHashKeyAttribute() {
