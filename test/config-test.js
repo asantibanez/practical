@@ -3,7 +3,7 @@
 
 const Expect = require('expect.js');
 const Moment = require('moment');
-const Model = require('../model');
+const Model = require('../dist/model');
 const User = require('./models/user');
 
 

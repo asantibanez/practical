@@ -2,7 +2,7 @@
   "name": "practical",
   "version": "1.1.1",
   "description": "Practical ActiveRecord for DynamoDB",
-  "main": "./model.js",
+  "main": "./dist/model.js",
   "author": "Andrés Santibáñez (santibanez.andres@gmail.com)",
   "license": "MIT",
   "engines": {
@@ -15,12 +15,15 @@
     "moment": "^2.17.1"
   },
   "devDependencies": {
+    "babel-cli": "^6.22.2",
+    "babel-preset-env": "^1.1.8",
     "expect.js": "^0.3.1",
     "faker": "^3.1.0",
     "mocha": "^3.2.0"
   },
   "scripts": {
-    "pretest": "npm run database-setup",
+    "build": "babel src -d dist",
+    "pretest": "npm run database-setup && npm run build",
     "test": " mocha --reporter spec",
     "dynamodb-local": "cd dynamodb-local && java -Djava.library.path=./DynamoDBLocal_lib -jar DynamoDBLocal.jar -sharedDb -inMemory",
     "database-setup": "cd test/database && node migrate && node seeder"

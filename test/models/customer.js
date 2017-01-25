@@ -1,7 +1,7 @@
 'use strict';
 
 
-const Model = require('../../model');
+const Model = require('../../dist/model');
 
 
 class Customer extends Model {
